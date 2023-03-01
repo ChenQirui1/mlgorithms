@@ -4,24 +4,6 @@ from scipy.stats import multivariate_normal
 from supervised.discriminative.linear_model import LinearModel
 
 
-def main(train_path, eval_path, pred_path):
-    """Problem 1(e): Gaussian discriminant analysis (GDA)
-
-    Args:
-        train_path: Path to CSV file containing dataset for training.
-        eval_path: Path to CSV file containing dataset for evaluation.
-        pred_path: Path to save predictions.
-    """
-    # Load dataset
-    x_train, y_train = util.load_dataset(train_path, add_intercept=False)
-    x_eval,y_eval = util.load_dataset(eval_path, add_intercept=False)
-
-    # *** START CODE HERE ***
-    clf = GDA()
-    clf.fit(x_train,y_train)
-    print(clf.predict(x_eval))
-    # *** END CODE HERE ***
-
 class GDA(LinearModel):
     """Gaussian Discriminant Analysis.
 

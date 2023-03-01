@@ -42,7 +42,6 @@ class LogisticRegression(LinearModel):
             x: Training example inputs. Shape (m, n).
             y: Training example labels. Shape (m,).
         """
-        # *** START CODE HERE ***
         #declaring X and y
         X = np.array(x,dtype=np.float64)
         Y = np.array(y,dtype=np.float64)
@@ -70,7 +69,7 @@ class LogisticRegression(LinearModel):
             prev_theta = self.theta
 
         return self.theta
-        # *** END CODE HERE ***
+
 
     def predict(self, x):
         """Make a prediction given new inputs x.
@@ -81,7 +80,6 @@ class LogisticRegression(LinearModel):
         Returns:
             Outputs of shape (m,).
         """
-        # *** START CODE HERE ***
         X = np.array(x)
         m,n = np.shape(X)
         output = np.empty(m,dtype=np.float64)
@@ -91,7 +89,6 @@ class LogisticRegression(LinearModel):
             output[i] = 1 if (raw_value > 0.5) else 0
         return output
 
-        # *** END CODE HERE ***
 
     def score(self,x,y):
         prediction = self.predict(x)

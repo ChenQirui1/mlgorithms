@@ -1,19 +1,5 @@
 import numpy as np
 from ...utils import util
-from scipy.stats import multivariate_normal 
-
-
-def main(train_path, eval_path, pred_path):
-    """Problem 1(e): Gaussian discriminant analysis (GDA)
-
-    Args:
-        train_path: Path to CSV file containing dataset for training.
-        eval_path: Path to CSV file containing dataset for evaluation.
-        pred_path: Path to save predictions.
-    """
-    # Load dataset
-    # x_train, y_train = util.load_dataset(train_path, add_intercept=False)
-    # x_eval,y_eval = util.load_dataset(eval_path, add_intercept=False)
 
 
 class BaseNB():
@@ -28,6 +14,56 @@ class BaseNB():
     def __init__(self):
         self.theta = []
         self.prior = []
+        self.n_labels = None
+
+
+    def calc_feat_proba(self,x,y,mode):
+        """
+        Calculates the probabilities of a feature x given the class labels.
+
+        Arg:
+            x: values of feature x. Shape (m,) {0,1}
+            y: values of label y.  Shape (m,) 
+        """
+        probas = []
+        labels = np.unique(y)
+
+        if mode == 'bernouill':
+            #proba of the feature x appearing(x=1) when y = i
+            for i in labels:
+                proba = np.sum((x == 1) & (y == i))/np.sum(y==i)
+                probas.append(proba)
+
+        elif mode == 'categorical':
+            for i in np.unique(x):
+                probas_per_feat_val = []
+                for j in labels:
+                    #proba of the feature x is some value when y is some value
+                    proba = np.sum((x == i) & (y == j))/np.sum(y==j)
+                    probas_per_feat_val.append(proba)
+
+                probas.append(probas_per_feat_val)
+
+
+        return probas
+
+
+    def calc_prior_proba(self,y):
+        """
+        Calculates the probabilities of label y
+
+        Arg:
+            y: values of label y.  Shape (m,) {0,1}
+        """
+
+        proba = []
+
+        for i in np.unique(y):
+            prior_proba = np.sum(y==i)/len(y)
+
+            proba.append(prior_proba)
+
+        return prior_proba
 
 
     def predict(self, X):
@@ -41,21 +77,24 @@ class BaseNB():
         """
 
         # applying the 
+        # theta (m,2)
+        # prior (2,)
         scores = np.dot(X,self.theta*self.prior)
 
         prediction = np.argmax(scores,axis=1)
 
         return prediction
-    
 
-    
+
+
 class BernouillNB(BaseNB):
-    """Base implementation of naive bayes.
+    """Bernouill implementation of naive bayes.
 
     Example usage:
-        > clf = GDA()
+        > clf = BernouillNB()
         > clf.fit(x_train, y_train)
         > clf.predict(x_eval)
+
     """
 
     def fit(self, X, y):
@@ -69,37 +108,6 @@ class BernouillNB(BaseNB):
             <tuple>: Naive Bayes model parameters.
         """
 
-        def cal_prob_feat(x,y):
-            """
-            Calculates the probabilities of a feature x given the class labels.
-
-            Arg:
-                x: values of feature x. Shape (m,) {0,1}
-                y: values of label y.  Shape (m,) {0,1}
-            """
-
-            prob_1 = np.sum((x == 1) & (y == 1))/np.sum(y==1)
-
-            prob_0 = np.sum((x == 1) & (y == 0))/np.sum(y==0)
-
-            return (prob_0,prob_1)
-        
-
-        def cal_prior(y):
-            """
-            Calculates the probabilities of label y
-
-            Arg:
-                y: values of label y.  Shape (m,) {0,1}
-            """
-
-            prior_1 = np.sum(y)/len(y)
-
-            prior_0 = np.sum(y==0)/len(y)
-
-            return (prior_0,prior_1)
-        
-
         m,n = X.shape
 
         probs = []
@@ -108,10 +116,53 @@ class BernouillNB(BaseNB):
             
             x = X[:,i]
 
-            probs.append(cal_prob_feat(x,y))
+            probs.append(self.calc_feat_proba(x,y,'bernouill'))
     
-
         self.theta = np.array(probs)
-        self.prior = np.array(cal_prior(y))
+        self.prior = np.array(self.calc_prior_proba(y))
+        self.n_labels = len(np.unique(y))
 
         return self
+
+
+class CategoricalNB(BaseNB):
+    """Categorical implementation of naive bayes.
+
+    Example usage:
+        > clf = CategoricalNB()
+        > clf.fit(x_train, y_train)
+        > clf.predict(x_eval)
+
+    """
+
+    def fit(self, X, y):
+
+        m,n = X.shape
+
+        probs = []
+
+        for i in range(n):
+        
+            x = X[:,i]
+
+            probs.append(self.calc_feat_proba(x,y,'categorical'))
+    
+        self.theta = np.transpose(np.array(probs),axes=[1,2,0])
+        self.prior = np.array(self.calc_prior_proba(y))
+        self.n_labels = len(np.unique(y))
+
+        return self
+    
+
+    def lookup(self,X):
+
+        m,n = np.shape(X)
+
+
+        for feat in range(n):
+            feat_vals = X[:,feat]
+            for feat_category in np.unique(feat_vals):
+                for label in range(self.n_labels):
+                    np.where(feat_vals == feat_category,self.theta[feat_category,label,feat],feat_vals)
+
+        super().
