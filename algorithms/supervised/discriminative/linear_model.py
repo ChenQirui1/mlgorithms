@@ -24,7 +24,8 @@ class LinearModel(object):
             x: Training example inputs. Shape (m, n).
             y: Training example labels. Shape (m,).
         """
-        raise NotImplementedError('Subclass of LinearModel must implement fit method.')
+        raise NotImplementedError(
+            'Subclass of LinearModel must implement fit method.')
 
     def predict(self, x):
         """Make a prediction given new inputs x.
@@ -35,7 +36,7 @@ class LinearModel(object):
         Returns:
             Outputs of shape (m,).
         """
-        raise NotImplementedError('Subclass of LinearModel must implement predict method.')
-    
+        raise NotImplementedError(
+            'Subclass of LinearModel must implement predict method.')
 
-    ### Taken from CS229
+    # Taken from CS229

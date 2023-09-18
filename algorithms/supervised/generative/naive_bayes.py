@@ -16,8 +16,7 @@ class BaseNB():
         self.prior = []
         self.n_labels = None
 
-
-    def calc_feat_proba(self,x,y,mode):
+    def calc_feat_proba(self, x, y, mode):
         """
         Calculates the probabilities of a feature x given the class labels.
 
@@ -29,26 +28,24 @@ class BaseNB():
         labels = np.unique(y)
 
         if mode == 'bernouill':
-            #proba of the feature x appearing(x=1) when y = i
+            # proba of the feature x appearing(x=1) when y = i
             for i in labels:
-                proba = np.sum((x == 1) & (y == i))/np.sum(y==i)
+                proba = np.sum((x == 1) & (y == i))/np.sum(y == i)
                 probas.append(proba)
 
         elif mode == 'categorical':
             for i in np.unique(x):
                 probas_per_feat_val = []
                 for j in labels:
-                    #proba of the feature x is some value when y is some value
-                    proba = np.sum((x == i) & (y == j))/np.sum(y==j)
+                    # proba of the feature x is some value when y is some value
+                    proba = np.sum((x == i) & (y == j))/np.sum(y == j)
                     probas_per_feat_val.append(proba)
 
                 probas.append(probas_per_feat_val)
 
-
         return probas
 
-
-    def calc_prior_proba(self,y):
+    def calc_prior_proba(self, y):
         """
         Calculates the probabilities of label y
 
@@ -59,12 +56,11 @@ class BaseNB():
         probas = []
 
         for i in np.unique(y):
-            prior_proba = np.sum(y==i)/len(y)
+            prior_proba = np.sum(y == i)/len(y)
 
             probas.append(prior_proba)
 
         return probas
-
 
     def predict(self, X):
         """Make a prediction given new inputs x.
@@ -76,12 +72,12 @@ class BaseNB():
             Outputs of shape (m,).
         """
 
-        # applying the 
+        # applying the
         # theta (m,2)
         # prior (2,)
-        scores = np.dot(X,self.theta)*self.prior
+        scores = np.dot(X, self.theta)*self.prior
 
-        prediction = np.argmax(scores,axis=1)
+        prediction = np.argmax(scores, axis=1)
 
         return prediction
 
@@ -107,16 +103,16 @@ class BernouillNB(BaseNB):
             <tuple>: Naive Bayes model parameters.
         """
 
-        m,n = X.shape
+        m, n = X.shape
 
         probs = []
 
         for i in range(n):
-            
-            x = X[:,i]
 
-            probs.append(self.calc_feat_proba(x,y,'bernouill'))
-    
+            x = X[:, i]
+
+            probs.append(self.calc_feat_proba(x, y, 'bernouill'))
+
         self.theta = np.array(probs)
         self.prior = np.array(self.calc_prior_proba(y))
         self.n_labels = len(np.unique(y))
@@ -141,17 +137,17 @@ class BernouillNB(BaseNB):
 #         probs = []
 
 #         for i in range(n):
-        
+
 #             x = X[:,i]
 
 #             probs.append(self.calc_feat_proba(x,y,'categorical'))
-    
+
 #         self.theta = np.transpose(np.array(probs),axes=[1,2,0])
 #         self.prior = np.array(self.calc_prior_proba(y))
 #         self.n_labels = len(np.unique(y))
 
 #         return self
-    
+
 
 #     def lookup(self,X):
 
@@ -163,63 +159,52 @@ class BernouillNB(BaseNB):
 #         #     for feat_category in np.unique(feat_vals):
 #         #         for label in range(self.n_labels):
 #         #             np.where(feat_vals == feat_category,self.theta[feat_category,label,feat],feat_vals)
-        
+
 #         prediction = []
-        
+
 #         for feat in range(n):
 #             feat_vals = X[:,feat]
 #             for feat_category in np.unique(feat_vals):
 #                 feat_vals = np.where(feat_vals == feat_category,self.theta[feat_category,:,feat],feat_vals)
 #             prediction.append(feat_vals)
-            
+
 #         return prediction
-                
-                
-                
+
+
 class MultinomialNB(BaseNB):
     def __init__(self):
         super().__init__()
         self.term_frequency_per_label = None
-    
-    
-    def sum_term_frequency(self,X,y):
+
+    def sum_term_frequency(self, X, y):
         freq_per_label = []
         labels = np.unique(y)
         for label in labels:
-            freq_per_label.append(np.sum(np.sum(X,axis=1),where=(y==label)))
-            
+            freq_per_label.append(
+                np.sum(np.sum(X, axis=1), where=(y == label)))
+
         return freq_per_label
-        
-        
-    def calc_feat_proba(self,x,y):
+
+    def calc_feat_proba(self, x, y):
         labels = np.unique(y)
         proba = []
         for label in labels:
-            proba.append(np.sum(x,where=(y==label))/self.term_frequency_per_label[label])
+            proba.append(np.sum(x, where=(y == label)) /
+                         self.term_frequency_per_label[label])
         return proba
-        
-        
-    def fit(self,X,y):
-        m,n = X.shape
-        
-        self.term_frequency_per_label = self.sum_term_frequency(X,y)
-        
+
+    def fit(self, X, y):
+        m, n = X.shape
+
+        self.term_frequency_per_label = self.sum_term_frequency(X, y)
+
         probas = []
         for i in range(n):
-            x = X[:,i]
-            probas.append(self.calc_feat_proba(x,y))
-        
+            x = X[:, i]
+            probas.append(self.calc_feat_proba(x, y))
+
         self.theta = np.array(probas)
         self.prior = np.array(self.calc_prior_proba(y))
         self.n_labels = len(np.unique(y))
-        
+
         return self
-
-        
-        
-        
-        
-
-        
-                    
-        
