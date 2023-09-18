@@ -56,14 +56,14 @@ class BaseNB():
             y: values of label y.  Shape (m,) {0,1}
         """
 
-        proba = []
+        probas = []
 
         for i in np.unique(y):
             prior_proba = np.sum(y==i)/len(y)
 
-            proba.append(prior_proba)
+            probas.append(prior_proba)
 
-        return prior_proba
+        return probas
 
 
     def predict(self, X):
@@ -79,12 +79,11 @@ class BaseNB():
         # applying the 
         # theta (m,2)
         # prior (2,)
-        scores = np.dot(X,self.theta*self.prior)
+        scores = np.dot(X,self.theta)*self.prior
 
         prediction = np.argmax(scores,axis=1)
 
         return prediction
-
 
 
 class BernouillNB(BaseNB):
@@ -124,45 +123,103 @@ class BernouillNB(BaseNB):
 
         return self
 
+# #broken not fix yet
+# class CategoricalNB(BaseNB):
+#     """Categorical implementation of naive bayes.
 
-class CategoricalNB(BaseNB):
-    """Categorical implementation of naive bayes.
+#     Example usage:
+#         > clf = CategoricalNB()
+#         > clf.fit(x_train, y_train)
+#         > clf.predict(x_eval)
 
-    Example usage:
-        > clf = CategoricalNB()
-        > clf.fit(x_train, y_train)
-        > clf.predict(x_eval)
+#     """
 
-    """
+#     def fit(self, X, y):
 
-    def fit(self, X, y):
+#         m,n = X.shape
 
-        m,n = X.shape
+#         probs = []
 
-        probs = []
-
-        for i in range(n):
+#         for i in range(n):
         
-            x = X[:,i]
+#             x = X[:,i]
 
-            probs.append(self.calc_feat_proba(x,y,'categorical'))
+#             probs.append(self.calc_feat_proba(x,y,'categorical'))
     
-        self.theta = np.transpose(np.array(probs),axes=[1,2,0])
+#         self.theta = np.transpose(np.array(probs),axes=[1,2,0])
+#         self.prior = np.array(self.calc_prior_proba(y))
+#         self.n_labels = len(np.unique(y))
+
+#         return self
+    
+
+#     def lookup(self,X):
+
+#         m,n = np.shape(X)
+
+
+#         # for feat in range(n):
+#         #     feat_vals = X[:,feat]
+#         #     for feat_category in np.unique(feat_vals):
+#         #         for label in range(self.n_labels):
+#         #             np.where(feat_vals == feat_category,self.theta[feat_category,label,feat],feat_vals)
+        
+#         prediction = []
+        
+#         for feat in range(n):
+#             feat_vals = X[:,feat]
+#             for feat_category in np.unique(feat_vals):
+#                 feat_vals = np.where(feat_vals == feat_category,self.theta[feat_category,:,feat],feat_vals)
+#             prediction.append(feat_vals)
+            
+#         return prediction
+                
+                
+                
+class MultinomialNB(BaseNB):
+    def __init__(self):
+        super().__init__()
+        self.term_frequency_per_label = None
+    
+    
+    def sum_term_frequency(self,X,y):
+        freq_per_label = []
+        labels = np.unique(y)
+        for label in labels:
+            freq_per_label.append(np.sum(np.sum(X,axis=1),where=(y==label)))
+            
+        return freq_per_label
+        
+        
+    def calc_feat_proba(self,x,y):
+        labels = np.unique(y)
+        proba = []
+        for label in labels:
+            proba.append(np.sum(x,where=(y==label))/self.term_frequency_per_label[label])
+        return proba
+        
+        
+    def fit(self,X,y):
+        m,n = X.shape
+        
+        self.term_frequency_per_label = self.sum_term_frequency(X,y)
+        
+        probas = []
+        for i in range(n):
+            x = X[:,i]
+            probas.append(self.calc_feat_proba(x,y))
+        
+        self.theta = np.array(probas)
         self.prior = np.array(self.calc_prior_proba(y))
         self.n_labels = len(np.unique(y))
-
+        
         return self
-    
 
-    def lookup(self,X):
+        
+        
+        
+        
 
-        m,n = np.shape(X)
-
-
-        for feat in range(n):
-            feat_vals = X[:,feat]
-            for feat_category in np.unique(feat_vals):
-                for label in range(self.n_labels):
-                    np.where(feat_vals == feat_category,self.theta[feat_category,label,feat],feat_vals)
-
-        super().
+        
+                    
+        
