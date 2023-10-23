@@ -20,6 +20,36 @@ def InputNormalise(X: np.ndarray, dist=None):
     return new_X, mean, std
 
 
+class BatchNorm:
+    def __init__(self) -> None:
+        self.Z_norm = None
+        self.gamma
+        self.beta
+        self.mean
+        self.var
+
+    def update(self):
+        # self.norm_gamma = self.norm_gamma - self.lr * \
+        #     V_w_corr/np.sqrt(S_w_corr+self.eps) + reg
+        # self.norm_beta = self.norm_beta - self.lr * \
+        #     V_w_corr/np.sqrt(S_w_corr+self.eps) + reg
+
+        pass
+
+    def forward(self, Z):
+        # batch norm
+
+        m = self.Z.shape[1]
+
+        mean = (1/m) * np.sum(self.Z, axis=0)
+        var = 1/(m)*np.sum((self.Z - mean)**2, axis=0)
+        Z_norm = (self.Z - mean) / np.sqrt(var + self.eps)
+        self.Z = self.norm_gamma*Z_norm + self.norm_beta
+
+    def pred():
+        pass
+
+
 if __name__ == '__main__':
     array = np.random.rand(10, 3)
     print(InputNormalise(array))

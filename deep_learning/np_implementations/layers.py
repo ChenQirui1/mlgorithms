@@ -141,6 +141,7 @@ class Linear(BaseNN):
         Z_norm = (self.Z - mean) / np.sqrt(var + self.eps)
         self.Z = self.norm_gamma*Z_norm + self.norm_beta
 
+
         return self.Z
 
     def backward(self, grad_Z):
